@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>여러 가지 사각형을 알아봐요 - 네모네모 컴퍼니</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d1b3d; --navy2:#16295a; --gold:#ffc83d; --red:#ff3b5c; --green:#1fc77e; --blue:#3b8cff;
+  --paper:#fffdf6; --ink:#1d2433; --grid:#5ec8f0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%}
+body{
+  font-family:'Noto Sans KR',sans-serif;color:var(--ink);overflow-x:hidden;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(120,170,255,.35), transparent 60%),
+    linear-gradient(180deg,#0b1533 0%,#1a2d63 55%,#2a3f7a 100%);
+  min-height:100vh;
+}
+/* 빌딩 야경 */
+#city{position:fixed;inset:auto 0 0 0;height:46vh;pointer-events:none;z-index:0;opacity:.55}
+#city .b{position:absolute;bottom:0;background:
+  repeating-linear-gradient(90deg,transparent 0 10px,rgba(0,0,0,.0) 10px 14px),
+  linear-gradient(#18244a,#0e1631);border-top:3px solid #24356b}
+#city .b::before{content:"";position:absolute;inset:12px 8px 0 8px;
+  background:
+   repeating-linear-gradient(0deg,transparent 0 14px,rgba(10,16,40,1) 14px 22px),
+   repeating-linear-gradient(90deg,rgba(255,214,120,.85) 0 8px,rgba(10,16,40,1) 8px 16px);
+  opacity:.55;mask-image:linear-gradient(transparent,#000 20%)}
+.font-j{font-family:'Jua',sans-serif}
+button{font-family:'Jua',sans-serif;cursor:pointer;border:none}
+.hidden{display:none!important}
+#app{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:12px 14px 40px}
+
+/* ===== 시작 화면 ===== */
+#start{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;color:#fff}
+.logo{font-family:'Jua';font-size:20px;letter-spacing:4px;color:var(--gold);display:flex;align-items:center;gap:8px}
+.logo i{display:inline-block;width:22px;height:22px;border:4px solid var(--gold);transform:rotate(12deg)}
+.title{font-family:'Jua';font-size:clamp(34px,6.5vw,64px);line-height:1.1;margin:0;
+  background:linear-gradient(180deg,#fff 30%,#ffe08a);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 0 rgba(0,0,0,.35))}
+.sub{font-size:18px;opacity:.9}
+.startcard{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);
+  border-radius:24px;padding:22px;width:min(560px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.startcard input{width:100%;font-size:24px;font-family:'Jua';padding:14px 18px;border-radius:14px;border:3px solid #ffd76a;
+  text-align:center;outline:none;background:#fffbea;color:#333;user-select:text;-webkit-user-select:text}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.rule{background:rgba(0,0,0,.25);border-radius:14px;padding:12px 8px;font-size:14px;line-height:1.45}
+.rule b{display:block;font-family:'Jua';font-size:28px;margin-bottom:4px}
+.bigbtn{font-size:26px;padding:16px 34px;border-radius:18px;color:#3a2600;
+  background:linear-gradient(180deg,#ffe48a,#ffb703);box-shadow:0 7px 0 #b97900,0 14px 30px rgba(0,0,0,.35);
+  transition:transform .08s}
+.bigbtn:active{transform:translateY(5px);box-shadow:0 2px 0 #b97900}
+.btn2{font-size:18px;padding:10px 18px;border-radius:14px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.ranks-strip{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-size:13px;margin-top:10px}
+.ranks-strip span{background:rgba(255,255,255,.12);padding:4px 9px;border-radius:99px}
+
+/* ===== HUD ===== */
+#hud{position:sticky;top:0;z-index:20;display:flex;gap:10px;align-items:stretch;padding:8px 0 10px;
+  background:linear-gradient(#0b1533 70%,transparent)}
+.badge{display:flex;gap:10px;align-items:center;background:linear-gradient(160deg,#fff,#e9eefc);border-radius:16px;padding:8px 12px;
+  box-shadow:0 6px 0 #9fb0dd;min-width:250px;position:relative}
+.badge::before{content:"";position:absolute;top:-10px;left:50%;width:26px;height:12px;background:#c43a52;border-radius:4px 4px 0 0;transform:translateX(-50%)}
+.badge .ph{width:52px;height:60px;border-radius:10px;background:linear-gradient(#bfe3ff,#86c3ff);display:grid;place-items:center;font-size:32px;border:2px solid #fff;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08)}
+.badge .co{font-size:10px;color:#6a7aa6;letter-spacing:1px}
+.badge .nm{font-family:'Jua';font-size:20px;line-height:1.1}
+.badge .rk{font-family:'Jua';font-size:15px;color:#fff;background:var(--navy2);display:inline-block;padding:1px 10px;border-radius:99px;margin-top:2px}
+.xpwrap{flex:1;background:rgba(255,255,255,.1);border-radius:16px;padding:8px 14px;color:#fff;display:flex;flex-direction:column;justify-content:center;min-width:160px}
+.xpline{display:flex;justify-content:space-between;font-size:13px;opacity:.95}
+.xpbar{height:16px;border-radius:99px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:5px;position:relative}
+.xpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4cf2a5,#2bd3ff);border-radius:99px;transition:width .6s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 0 12px #4cf2a5}
+.stats{display:flex;gap:8px}
+.stat{background:rgba(255,255,255,.1);color:#fff;border-radius:14px;padding:6px 10px;text-align:center;min-width:58px}
+.stat b{display:block;font-family:'Jua';font-size:22px;line-height:1.1}
+.stat small{font-size:11px;opacity:.8}
+.hudbtns{display:flex;gap:6px}
+.hb{background:rgba(255,255,255,.14);color:#fff;border-radius:14px;padding:6px 10px;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.2)}
+.hb span{font-size:22px}
+.combo{color:#ffb15c}
+.combo.hot b{animation:flame .5s infinite alternate;color:#ff7a2f}
+@keyframes flame{to{transform:scale(1.15);text-shadow:0 0 10px #ff9a3c}}
+
+/* ===== 문제 카드 ===== */
+#qcard{background:var(--paper);border-radius:26px;padding:20px 22px 24px;box-shadow:0 14px 0 #c9c1a3,0 30px 60px rgba(0,0,0,.4);position:relative;
+  background-image:linear-gradient(rgba(94,200,240,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(94,200,240,.07) 1px,transparent 1px);background-size:22px 22px}
+#qcard.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-12px) rotate(-.6deg)}40%,80%{transform:translateX(12px) rotate(.6deg)}}
+.qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.qno{font-family:'Jua';background:linear-gradient(#ff6b84,#ff3b5c);color:#fff;border-radius:99px;padding:4px 14px;font-size:18px;box-shadow:0 3px 0 #b81d3a}
+.qtype{font-family:'Jua';background:#ffe56b;border-radius:10px;padding:3px 12px;font-size:15px;transform:rotate(-2deg)}
+.qtry{margin-left:auto;font-size:14px;color:#8a8a8a}
+.qtext{font-family:'Jua';font-size:clamp(22px,3.2vw,32px);margin:12px 4px 14px;line-height:1.35;word-break:keep-all}
+.qtext em{font-style:normal;color:#e8204a;background:linear-gradient(transparent 60%,#ffe2e8 60%)}
+.visual{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-end;margin:6px 0 16px}
+.shapecard{background:#fff;border:3px solid #e2e8f0;border-radius:18px;padding:6px;position:relative;transition:transform .12s, border-color .12s, box-shadow .12s;box-shadow:0 5px 0 #d5dce6}
+.shapecard.ans{cursor:pointer}
+.shapecard.ans:hover{transform:translateY(-3px)}
+.shapecard.sel{border-color:#ff3b5c;box-shadow:0 5px 0 #ff9aac,0 0 0 4px rgba(255,59,92,.15)}
+.shapecard .mark{position:absolute;top:-14px;right:-12px;width:44px;height:44px;border:5px solid #ff2d55;border-radius:50%;opacity:0;transform:scale(2.2) rotate(-20deg);transition:.18s;background:rgba(255,255,255,.4)}
+.shapecard.sel .mark{opacity:1;transform:scale(1) rotate(0)}
+svg text{font-family:'Jua'}
+.opts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.opt{font-size:24px;padding:14px 22px;border-radius:16px;background:#fff;border:3px solid #d8dfeb;box-shadow:0 6px 0 #cbd3e1;color:#223;position:relative;min-width:120px;transition:transform .08s}
+.opt:active{transform:translateY(4px);box-shadow:0 2px 0 #cbd3e1}
+.opt.sel{border-color:#ff3b5c;background:#fff3f5;box-shadow:0 6px 0 #ff9aac}
+.opt.sel::after{content:"";position:absolute;inset:-6px -6px;border:4px solid rgba(255,45,85,.85);border-radius:50%;animation:stamp .2s ease-out}
+@keyframes stamp{from{transform:scale(1.6);opacity:0}to{transform:scale(1);opacity:1}}
+.prop{font-family:'Noto Sans KR';font-weight:700;font-size:19px;text-align:left;min-width:min(440px,100%)}
+.prop b{font-family:'Jua';color:#1d6fe0;margin-right:8px;font-size:22px}
+.oxrow{display:flex;gap:26px;justify-content:center}
+.oxbtn{width:min(220px,40vw);height:min(200px,36vw);border-radius:28px;font-size:min(130px,24vw);line-height:1;display:grid;place-items:center;background:#fff;position:relative;transition:transform .1s}
+.oxbtn.o{color:#ff2d55;border:6px solid #ff8aa1;box-shadow:0 10px 0 #ff8aa1}
+.oxbtn.x{color:#2b7bff;border:6px solid #8db7ff;box-shadow:0 10px 0 #8db7ff}
+.oxbtn:hover{transform:translateY(-4px) rotate(-2deg)}
+.oxbtn:active{transform:translateY(6px);box-shadow:0 3px 0 #ccc}
+.oxbtn small{position:absolute;bottom:10px;font-size:16px;color:#999}
+.submitrow{display:flex;gap:12px;justify-content:center;margin-top:22px}
+.submit{font-size:26px;padding:14px 46px;border-radius:18px;color:#fff;background:linear-gradient(#36d58f,#12a866);box-shadow:0 7px 0 #0b7a49}
+.submit:active{transform:translateY(5px);box-shadow:0 2px 0 #0b7a49}
+.clear{font-size:18px;padding:12px 20px;border-radius:16px;background:#eef1f6;color:#556;box-shadow:0 5px 0 #cfd6e2}
+/* 표 */
+.otable{border-collapse:separate;border-spacing:6px;margin:0 auto}
+.otable th{font-family:'Jua';font-size:18px;padding:6px 10px;border-radius:10px;background:#fde5c8;white-space:nowrap}
+.otable th.rowh{background:#e5efff;text-align:left}
+.cell{width:56px;height:52px;border-radius:12px;background:#fff;border:2px dashed #c8d0dd;font-family:'Jua';font-size:34px;position:relative}
+.cell.O{color:#ff2d55;border:2px solid #ffb3c1;background:#fff6f8}
+.cell.X{color:#2b7bff;border:2px solid #b5ceff;background:#f4f8ff}
+.cell.O,.cell.X{animation:stamp .18s}
+.tabwrap{overflow-x:auto;padding-bottom:6px}
+.tip{font-size:14px;color:#7a8296;text-align:center;margin-top:8px}
+
+/* 떠오르는 점수 */
+.floaty{position:fixed;z-index:80;font-family:'Jua';font-size:42px;pointer-events:none;animation:floatup 1.2s ease-out forwards;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+@keyframes floatup{from{opacity:1;transform:translate(-50%,0) scale(.6)}20%{transform:translate(-50%,-20px) scale(1.2)}to{opacity:0;transform:translate(-50%,-120px) scale(1)}}
+.bigstamp{position:fixed;left:50%;top:42%;z-index:70;font-family:'Jua';font-size:clamp(60px,12vw,120px);pointer-events:none;
+  transform:translate(-50%,-50%);animation:bigst .9s ease-out forwards;white-space:nowrap}
+@keyframes bigst{0%{transform:translate(-50%,-50%) scale(3) rotate(-15deg);opacity:0}25%{transform:translate(-50%,-50%) scale(1) rotate(-6deg);opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1) rotate(-6deg)}}
+
+/* ===== 모달 ===== */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(5,10,30,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}}
+.modal{background:#fff;border-radius:26px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:popin .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes popin{from{transform:scale(.6);opacity:0}}
+.modal h2{font-family:'Jua';font-size:34px;margin:0 0 6px;text-align:center}
+.modal .lead{text-align:center;font-size:18px;color:#555;margin-bottom:12px}
+.explain{background:#f4f8ff;border-radius:16px;padding:14px 16px;font-size:17px;line-height:1.7;word-break:keep-all}
+.explain.hint{background:#fff8e6}
+.explain .ln{padding:3px 0;border-bottom:1px dashed #d7e0f0}
+.explain .ln:last-child{border:none}
+.ok{color:#11a35f;font-weight:900}.no{color:#e8204a;font-weight:900}
+.mbtns{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.mbtn{font-size:22px;padding:12px 30px;border-radius:16px;color:#fff;background:linear-gradient(#5a9bff,#2b6fe8);box-shadow:0 6px 0 #1a4bb0}
+.mbtn.gold{color:#3a2600;background:linear-gradient(#ffe48a,#ffb703);box-shadow:0 6px 0 #b97900}
+.mbtn.gray{background:#e9edf3;color:#445;box-shadow:0 6px 0 #c3cad6}
+.mbtn:disabled{filter:grayscale(.6);opacity:.6}
+.mbtn:active{transform:translateY(4px);box-shadow:none}
+
+/* 인사발령 */
+.decree{background:#fffaf0;border:2px solid #d9c7a3;border-radius:6px;padding:26px 24px;position:relative;font-family:'Noto Sans KR';
+  box-shadow:inset 0 0 0 8px #fffaf0,inset 0 0 0 10px #c9a96a}
+.decree h3{font-family:'Noto Sans KR';font-weight:900;letter-spacing:14px;text-align:center;font-size:28px;margin:0 0 16px}
+.decree .row{font-size:18px;margin:8px 0}
+.decree .big{font-family:'Jua';font-size:34px;text-align:center;margin:14px 0}
+.decree .big .arrow{color:#999;margin:0 10px}
+.seal{position:absolute;right:22px;bottom:18px;width:96px;height:96px;border:5px solid #e0242e;border-radius:50%;color:#e0242e;font-family:'Jua';
+  display:grid;place-items:center;font-size:28px;transform:rotate(-14deg) scale(3);opacity:0;animation:sealin .45s .5s cubic-bezier(.3,1.6,.5,1) forwards;text-align:center;line-height:1}
+.seal small{font-size:11px;display:block}
+@keyframes sealin{to{opacity:.9;transform:rotate(-14deg) scale(1)}}
+.decree.down{background:#fff3f3}
+/* 광클 경보 */
+#spam{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:20px;
+  background:repeating-linear-gradient(45deg,rgba(200,0,30,.92) 0 40px,rgba(140,0,20,.92) 40px 80px);animation:alarm .5s infinite alternate}
+@keyframes alarm{to{filter:brightness(1.35)}}
+#spam .siren{font-size:90px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#spam h1{font-family:'Jua';font-size:clamp(40px,8vw,80px);margin:8px 0;text-shadow:0 6px 0 #500}
+#spam p{font-size:22px;max-width:620px;line-height:1.5;font-weight:700}
+#spam .cnt{font-family:'Jua';font-size:60px;margin-top:10px}
+
+/* ===== 보상 상자 ===== */
+#gacha{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 45%,#2b2f6b,#090b20 70%);overflow:hidden}
+#gacha .rays{position:absolute;width:200vmax;height:200vmax;left:50%;top:45%;transform:translate(-50%,-50%);opacity:0;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.14) 0 8deg,transparent 8deg 20deg);animation:rot 12s linear infinite;transition:opacity .5s}
+@keyframes rot{to{transform:translate(-50%,-50%) rotate(360deg)}}
+#gacha .say{font-family:'Jua';color:#fff;font-size:28px;margin-bottom:20px;z-index:2;text-align:center}
+.box{width:220px;height:200px;position:relative;cursor:pointer;z-index:2;filter:drop-shadow(0 30px 30px rgba(0,0,0,.6))}
+.box .lid{position:absolute;left:-10px;right:-10px;top:0;height:60px;border-radius:14px;background:linear-gradient(#ff6b8b,#d6224a);box-shadow:inset 0 -8px 0 rgba(0,0,0,.18);z-index:2;transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.box .body{position:absolute;left:0;right:0;top:52px;bottom:0;border-radius:0 0 18px 18px;background:linear-gradient(90deg,#c21c40,#ff4f74 40%,#e0305a 60%,#a5122f);box-shadow:inset 0 10px 0 rgba(0,0,0,.15)}
+.box .rib{position:absolute;left:50%;width:40px;transform:translateX(-50%);top:0;bottom:0;background:linear-gradient(90deg,#f7c948,#ffe590,#e0a91f);z-index:3}
+.box .bow{position:absolute;left:50%;top:-38px;transform:translateX(-50%);font-size:60px;z-index:4}
+.box .q{position:absolute;inset:70px 0 0 0;display:grid;place-items:center;font-family:'Jua';font-size:70px;color:rgba(255,255,255,.85);z-index:3;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.box.tap{animation:boxtap .3s}
+@keyframes boxtap{25%{transform:rotate(-8deg) scale(1.05)}75%{transform:rotate(8deg) scale(1.05)}}
+.box.glow{animation:boxglow .9s infinite alternate}
+@keyframes boxglow{from{filter:drop-shadow(0 0 20px var(--tc)) drop-shadow(0 0 40px var(--tc))}to{filter:drop-shadow(0 0 40px var(--tc)) drop-shadow(0 0 90px var(--tc));transform:scale(1.06)}}
+.box.open .lid{transform:translateY(-160px) rotate(-25deg)}
+.taps{display:flex;gap:10px;margin-top:22px;z-index:2}
+.taps i{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.25)}
+.taps i.on{background:#ffd34d;box-shadow:0 0 12px #ffd34d}
+#flash{position:fixed;inset:0;background:#fff;z-index:65;pointer-events:none;opacity:0}
+#flash.go{animation:flash .6s}
+@keyframes flash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.card{width:min(300px,78vw);border-radius:22px;padding:6px;position:relative;z-index:3;animation:cardin .7s cubic-bezier(.2,1.3,.4,1)}
+@keyframes cardin{from{transform:rotateY(180deg) scale(.3);opacity:0}}
+.card .in{border-radius:18px;background:linear-gradient(160deg,#1b1f45,#0f1230);padding:18px 16px 18px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.card .tier{font-family:'Jua';font-size:18px;padding:3px 14px;border-radius:99px;display:inline-block;color:#111}
+.card .art{font-size:110px;line-height:1.25;margin:10px 0 2px;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5));animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(3deg)}}
+.card .nm{font-family:'Jua';font-size:28px}
+.card .ds{font-size:15px;opacity:.85;margin-top:6px;line-height:1.5;word-break:keep-all}
+.card .new{position:absolute;top:10px;left:10px;background:#ff3b5c;font-family:'Jua';padding:2px 10px;border-radius:8px;font-size:15px;transform:rotate(-8deg)}
+.card .shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 45%,transparent 60%);background-size:250% 100%;animation:shine 2.4s infinite}
+@keyframes shine{from{background-position:150% 0}to{background-position:-100% 0}}
+.t-common{background:linear-gradient(135deg,#c9d1db,#8d99a8)}
+.t-uncommon{background:linear-gradient(135deg,#8af0b4,#1aa65a)}
+.t-rare{background:linear-gradient(135deg,#9cc6ff,#2563eb)}
+.t-epic{background:linear-gradient(135deg,#e2b0ff,#8b2cf5)}
+.t-legend{background:linear-gradient(135deg,#fff3a8,#ffb400,#ff7a00)}
+.t-myth{background:linear-gradient(90deg,#ff4d6d,#ffb84d,#fff04d,#4dff88,#4dc3ff,#9b6bff,#ff4d6d);background-size:300% 100%;animation:rainbow 2s linear infinite}
+@keyframes rainbow{to{background-position:300% 0}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:66}
+
+/* 도감 */
+.coll{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.ci{border-radius:14px;padding:3px}
+.ci .in{background:#141834;color:#fff;border-radius:11px;text-align:center;padding:8px 4px;min-height:120px}
+.ci .e{font-size:44px}
+.ci .n{font-family:'Jua';font-size:14px;line-height:1.2}
+.ci .c{font-size:12px;opacity:.7}
+.ci.lock .e{filter:brightness(0) opacity(.5)}
+.tierleg{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0 14px;font-size:13px}
+.tierleg span{padding:2px 10px;border-radius:99px;font-family:'Jua';color:#111}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#222c;color:#fff;padding:12px 22px;border-radius:99px;font-size:18px;z-index:95;font-family:'Jua';animation:fadein .2s}
+.report td{padding:6px 10px;font-size:18px}
+.report td:last-child{font-family:'Jua';text-align:right;font-size:22px}
+.grade{font-family:'Jua';font-size:90px;text-align:center;line-height:1;margin:6px 0;background:linear-gradient(#ffcf3d,#ff7a00);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (max-width:760px){
+  #hud{flex-wrap:wrap}
+  .badge{min-width:0;flex:1}
+  .stats .stat{min-width:48px;padding:4px 6px}
+  .rules{grid-template-columns:1fr}
+  .opt{font-size:20px;min-width:100px;padding:12px 14px}
+}
+</style>
+</head>
+<body>
+<div id="city"></div>
+<div id="app">
+  <!-- 시작 -->
+  <section id="start">
+    <div class="logo"><i></i>(주)네모네모 컴퍼니 신입사원 채용<i></i></div>
+    <h1 class="title">여러 가지 사각형을<br>알아봐요</h1>
+    <div class="sub">사각형 문제를 풀어 <b style="color:var(--gold)">인턴</b>에서 <b style="color:var(--gold)">회장</b>까지 승진해 보세요!</div>
+    <div class="startcard">
+      <div id="contBox" class="hidden" style="margin-bottom:14px"></div>
+      <input id="nameIn" maxlength="8" placeholder="이름을 입력하세요">
+      <div style="margin-top:16px"><button class="bigbtn" id="goBtn">🪪 사원증 받고 출근하기</button></div>
+      <div class="rules">
+        <div class="rule"><b>⭕ 정답</b>경험치 UP!<br>처음에 바로 맞히면<br><b style="font-size:16px;display:inline">🎁 보상 상자</b></div>
+        <div class="rule"><b>❌ 오답</b>경험치가 깎여요.<br>쌓이면 <span style="color:#ff8a9c">직급 강등!</span></div>
+        <div class="rule"><b>🚨 광클</b>마구 누르면<br>즉시 <span style="color:#ff8a9c">한 직급 강등</span><br>+ 5초 반성 시간</div>
+      </div>
+      <div class="ranks-strip" id="rankStrip"></div>
+    </div>
+  </section>
+
+  <!-- 게임 -->
+  <section id="game" class="hidden">
+    <div id="hud">
+      <div class="badge">
+        <div class="ph" id="hPh">🧑‍🎓</div>
+        <div><div class="co">NEMONEMO Co. 사원증</div><div class="nm" id="hName">-</div><div class="rk" id="hRank">인턴</div></div>
+      </div>
+      <div class="xpwrap">
+        <div class="xpline"><span id="hXp">0 XP</span><span id="hNext">다음: 사원</span></div>
+        <div class="xpbar"><i id="hBar"></i></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="hOk">0</b><small>정답</small></div>
+        <div class="stat"><b id="hNo">0</b><small>오답</small></div>
+        <div class="stat combo" id="hComboBox"><b id="hCombo">0</b><small>🔥연속</small></div>
+      </div>
+      <div class="hudbtns">
+        <button class="hb" id="collBtn"><span>📒</span>도감</button>
+        <button class="hb" id="sndBtn"><span>🔊</span>소리</button>
+        <button class="hb" id="endBtn"><span>🏠</span>퇴근</button>
+      </div>
+    </div>
+    <div id="qcard"></div>
+  </section>
+</div>
+<div id="flash"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ================== 기본 데이터 ================== */
+const RANKS=[
+ {n:'인턴',x:0,e:'🧑‍🎓'},{n:'사원',x:20,e:'🧑‍💼'},{n:'주임',x:45,e:'👔'},{n:'대리',x:75,e:'💼'},
+ {n:'과장',x:110,e:'📊'},{n:'차장',x:150,e:'📈'},{n:'부장',x:195,e:'🏢'},{n:'이사',x:245,e:'🎩'},
+ {n:'상무',x:300,e:'🥂'},{n:'전무',x:360,e:'🚁'},{n:'부사장',x:425,e:'🛥️'},{n:'사장',x:495,e:'🏆'},{n:'회장',x:580,e:'👑'}];
+const TIERS=[
+ {k:'common',n:'일반',w:520,c:'#aab4c0'},{k:'uncommon',n:'고급',w:270,c:'#3fd07f'},
+ {k:'rare',n:'희귀',w:130,c:'#4f95ff'},{k:'epic',n:'영웅',w:60,c:'#b05cff'},
+ {k:'legend',n:'전설',w:17,c:'#ffb400'},{k:'myth',n:'신화',w:3,c:'#ff4dd2'}];
+const ITEMS=[
+ ['p1','common','🐦','양말 신은 비둘기','왼발에만 양말을 신었어요. 오른발은 부끄럽대요.'],
+ ['p2','common','🥔','졸린 감자','하루에 23시간을 자요. 나머지 1시간은 하품해요.'],
+ ['p3','common','🐌','출근길 달팽이','9시 출근인데 이제 막 집에서 나왔어요.'],
+ ['p4','common','✏️','수학 싫어하는 연필','숫자만 쓰려고 하면 심이 부러진 척해요.'],
+ ['p5','common','🍙','탈출한 삼각김밥','편의점에서 도망쳤어요. 꿈은 사각형이 되는 것!'],
+ ['p6','common','🧦','짝 잃은 양말','세탁기 속 비밀의 문으로 사라진 짝을 찾는 중.'],
+ ['p7','common','🐸','각도기 모자 개구리','연못에 있는 모든 각을 재고 다녀요.'],
+ ['p8','common','🧽','고민 많은 수세미','내가 정사각형인지 직사각형인지 매일 고민해요.'],
+ ['u1','uncommon','🥦','춤추는 브로콜리','음악만 나오면 머리(?)를 흔들어요.'],
+ ['u2','uncommon','🐧','넥타이 맨 펭귄','회의실에 늘 배로 미끄러져 들어와요.'],
+ ['u3','uncommon','🐹','야근하는 햄스터','쳇바퀴를 돌려 회사 전기를 만들어요.'],
+ ['u4','uncommon','🐔','비트박스 닭','꼬끼오 대신 "북치기 박치기!"'],
+ ['u5','uncommon','🍕','사다리꼴 피자','잘못 잘라서 사다리꼴이 됐지만 맛은 최고.'],
+ ['u6','uncommon','👟','로켓 실내화','복도에서 뛰면 안 돼요. 날면… 괜찮을까?'],
+ ['r1','rare','🦛','발레리나 하마','몸무게 2톤, 우아함 200%. 발끝으로 빙글빙글!'],
+ ['r2','rare','👽','외계인 택배기사','은하계 어디든 하루 배송. 지구 주소만 헷갈려요.'],
+ ['r3','rare','🐙','수학 천재 문어','다리 8개로 사각형 8개를 동시에 그려요.'],
+ ['r4','rare','🐱','닌자 고양이','아무도 모르게 친구 지우개를 숨겨요.'],
+ ['r5','rare','🤖','마름모 로봇','네 변의 길이가 모두 같은 게 자랑이에요.'],
+ ['r6','rare','🦄','평행 무지개 유니콘','지나간 자리에 평행한 무지개 두 줄이 생겨요.'],
+ ['e1','epic','🐉','정사각형 드래곤','불을 뿜으면 정사각형 모양 불꽃이 나와요.'],
+ ['e2','epic','🦖','시간여행 공룡','6600만 년 전에서 수학 숙제하러 왔어요.'],
+ ['e3','epic','👹','오답 먹는 몬스터','틀린 답을 먹고 자라요. 정답을 보면 도망가요!'],
+ ['e4','epic','🧙','직각 마법사','지팡이를 휘두르면 모든 각이 90°가 돼요.'],
+ ['e5','epic','🏴‍☠️','우주 해적 선장','보물 지도가 전부 평행사변형으로 그려져 있어요.'],
+ ['l1','legend','👑','세종대왕','한글을 만드신 위대한 임금님. 한글 "ㅁ"은 네모를 닮았지요!'],
+ ['l2','legend','🩰','전설의 발레리나','한 바퀴 돌면 360°! 지구도 같이 돈대요.'],
+ ['l3','legend','🛸','황금 외계인 여왕','온 우주의 별자리를 사각형으로 바꾸려 해요.'],
+ ['l4','legend','🐢','거북선 로봇','바다를 지키는 철갑 로봇. 등딱지가 마름모 무늬예요.'],
+ ['m1','myth','🌌','직각의 신','우주의 모든 직각을 만든 존재. 만나면 행운 가득!'],
+ ['m2','myth','🧩','칠교판 수호신','일곱 조각으로 무엇이든 만들어 내는 신화 속 존재.'],
+].map(a=>({id:a[0],t:a[1],e:a[2],n:a[3],d:a[4]}));
+
+const NAMES=['사다리꼴','평행사변형','마름모','직사각형','정사각형'];
+const KEY={'사다리꼴':'trap','평행사변형':'para','마름모':'rhom','직사각형':'rect','정사각형':'sq'};
+const DEF={
+ '사다리꼴':'평행한 변이 한 쌍이라도 있는 사각형',
+ '평행사변형':'마주 보는 두 쌍의 변이 서로 평행한 사각형',
+ '마름모':'네 변의 길이가 모두 같은 사각형',
+ '직사각형':'네 각이 모두 직각인 사각형',
+ '정사각형':'네 각이 모두 직각이고 네 변의 길이가 모두 같은 사각형'};
+const TIP={
+ trap:'마주 보는 변 중에 모눈 위에서 <b>같은 방향</b>으로 나란히 가는 변이 있는지 찾아보세요.',
+ para:'마주 보는 변이 <b>두 쌍 모두</b> 나란한지 확인해 보세요. 한 쌍만으로는 부족해요.',
+ rhom:'변의 길이는 모눈 칸을 세어 비교해요. 비스듬한 변은 가로로 몇 칸, 세로로 몇 칸 가는지 살펴보세요.',
+ rect:'꼭짓점마다 직각인지 확인해 보세요. <b>비스듬히 놓인 도형</b>도 직각을 가질 수 있어요!',
+ sq:'두 가지 조건을 모두 확인해야 해요: 네 각과 네 변. 기울어진 도형도 잊지 말고 살펴보세요.'};
+const LET='가나다라마바'.split('');
+const BANK={
+ rect:[[0,0],[6,0],[6,4],[0,4]], rect2:[[0,0],[5,0],[5,3],[0,3]],
+ sq:[[0,0],[4,0],[4,4],[0,4]], sq2:[[0,0],[3,0],[3,3],[0,3]],
+ dsq:[[2,0],[4,2],[2,4],[0,2]], dsq2:[[3,0],[6,3],[3,6],[0,3]],
+ para:[[2,0],[7,0],[5,4],[0,4]], para2:[[0,0],[4,0],[6,3],[2,3]],
+ rhom:[[4,0],[8,2],[4,4],[0,2]], rhom2:[[0,0],[5,0],[8,4],[3,4]],
+ trap:[[1,0],[4,0],[6,3],[0,3]], trap2:[[0,0],[3,0],[5,3],[0,3]], trap3:[[1,0],[4,0],[5,3],[0,3]],
+ rrect:[[0,2],[2,0],[5,3],[3,5]],
+ quad:[[0,0],[5,1],[4,4],[1,3]], quad2:[[0,1],[4,0],[5,4],[1,3]]};
+const QUADKEYS=Object.keys(BANK);
+const NAMEDKEYS=QUADKEYS.filter(k=>!k.startsWith('quad'));
+
+/* ================== 유틸 ================== */
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const now=()=>performance.now();
+function classify(p){
+  const v=[0,1,2,3].map(i=>[p[(i+1)%4][0]-p[i][0],p[(i+1)%4][1]-p[i][1]]);
+  const cr=(a,b)=>a[0]*b[1]-a[1]*b[0], dt=(a,b)=>a[0]*b[0]+a[1]*b[1], L=a=>a[0]*a[0]+a[1]*a[1];
+  const par02=cr(v[0],v[2])===0, par13=cr(v[1],v[3])===0;
+  const trap=par02||par13, para=par02&&par13;
+  const len=v.map(L);
+  const rhom=len.every(l=>l===len[0]);
+  const allRight=[0,1,2,3].every(i=>dt(v[i],v[(i+1)%4])===0);
+  const rect=allRight, sq=allRight&&rhom;
+  const oppEq=len[0]===len[2]&&len[1]===len[3];
+  return {trap,para,rhom,rect,sq,oppEq};
+}
+function reason(c,k){
+  switch(k){
+   case 'trap':return c.trap?'평행한 변이 있어요':'평행한 변이 한 쌍도 없어요';
+   case 'para':return c.para?'마주 보는 두 쌍의 변이 모두 평행해요':(c.trap?'평행한 변이 한 쌍뿐이에요':'평행한 변이 없어요');
+   case 'rhom':return c.rhom?'네 변의 길이가 모두 같아요':'네 변의 길이가 모두 같지는 않아요';
+   case 'rect':return c.rect?'네 각이 모두 직각이에요':'직각이 아닌 각이 있어요';
+   case 'sq':return c.sq?'네 각이 모두 직각이고 네 변의 길이가 모두 같아요':(c.rect?'네 각은 직각이지만 네 변의 길이가 달라요':'네 각이 모두 직각은 아니에요');
+  }
+}
+function quadSVG(pts,o={}){
+  const cell=o.cell||20,pad=o.pad??1;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const mx=Math.min(...xs)-pad,Mx=Math.max(...xs)+pad,my=Math.min(...ys)-pad,My=Math.max(...ys)+pad;
+  const W=(Mx-mx)*cell,H=(My-my)*cell;
+  let g='';
+  for(let x=0;x<=Mx-mx;x++)g+=`<line x1="${x*cell}" y1="0" x2="${x*cell}" y2="${H}"/>`;
+  for(let y=0;y<=My-my;y++)g+=`<line x1="0" y1="${y*cell}" x2="${W}" y2="${y*cell}"/>`;
+  const P=pts.map(p=>[(p[0]-mx)*cell,(p[1]-my)*cell]);
+  const cx=P.reduce((s,p)=>s+p[0],0)/4,cy=P.reduce((s,p)=>s+p[1],0)/4;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%;height:auto;display:block">
+   <rect width="${W}" height="${H}" fill="#fff"/>
+   <g stroke="${'#7fd3f3'}" stroke-width="1" stroke-dasharray="3 3">${g}</g>
+   <polygon points="${P.map(p=>p.join(',')).join(' ')}" fill="${o.fill||'rgba(255,255,255,0)'}" stroke="#1e2330" stroke-width="2.6" stroke-linejoin="round"/>
+   ${o.label?`<text x="${cx}" y="${cy+9}" font-size="${o.fs||26}" text-anchor="middle" fill="#1e2330">${o.label}</text>`:''}
+  </svg>`;
+}
+
+/* ================== 소리 ================== */
+let AC=null,soundOn=true;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,type='sine',w=0,vol=.18){const a=ac();if(!a||!soundOn)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;
+ const t=a.currentTime+w;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.02)}
+const SFX={
+ click(){tone(900,.05,'square',0,.05)},
+ ok(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',i*.08,.2))},
+ no(){tone(220,.25,'sawtooth',0,.15);tone(160,.4,'sawtooth',.18,.15)},
+ tap(){tone(300+Math.random()*200,.12,'square',0,.08);tone(120,.15,'sine',0,.25)},
+ reveal(t){const base={common:[523,659],uncommon:[523,659,784],rare:[523,659,784,1047],epic:[392,523,659,784,1047],legend:[392,523,659,784,1047,1319,1568],myth:[262,392,523,659,784,1047,1319,1568,2093]}[t];
+   base.forEach((f,i)=>tone(f,.35,'triangle',i*.09,.18)); if(t==='legend'||t==='myth'){base.forEach((f,i)=>tone(f*1.5,.5,'sine',.9+i*.06,.1))}},
+ up(){[392,523,659,784,659,784,1047].forEach((f,i)=>tone(f,.3,'square',i*.12,.09))},
+ down(){[523,466,415,349,262].forEach((f,i)=>tone(f,.35,'sawtooth',i*.15,.1))},
+ siren(){for(let i=0;i<6;i++){tone(880,.25,'square',i*.5,.09);tone(620,.25,'square',i*.5+.25,.09)}}
+};
+
+/* ================== 상태 ================== */
+let S={name:'',xp:0,coll:{},total:{ok:0,no:0,spam:0}};
+let SES, Q, qNo=0, combo=0, attempts=0, qStart=0, locked=false, clickLog=[], pendingRank=[], lastTypes=[], usedOX=[];
+function save(){try{localStorage.setItem('nemoGame',JSON.stringify(S))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem('nemoGame'));if(d&&d.name)return d}catch(e){}return null}
+const rankIdx=xp=>{let r=0;RANKS.forEach((R,i)=>{if(xp>=R.x)r=i});return r};
+
+/* ================== 시작 화면 ================== */
+(function initCity(){const c=$('#city');let x=0;while(x<110){const w=6+rnd(9),h=25+rnd(70);const d=document.createElement('div');d.className='b';d.style.cssText=`left:${x}%;width:${w}%;height:${h}%`;c.appendChild(d);x+=w+0.5}})();
+$('#rankStrip').innerHTML=RANKS.map(r=>`<span>${r.e} ${r.n}</span>`).join('');
+const saved=load();
+if(saved){
+  $('#contBox').classList.remove('hidden');
+  $('#contBox').innerHTML=`<div style="font-size:16px;margin-bottom:8px">지난번 근무 기록이 있어요</div>
+   <button class="bigbtn" id="contBtn" style="font-size:20px">${RANKS[rankIdx(saved.xp)].e} ${esc(saved.name)} ${RANKS[rankIdx(saved.xp)].n}님 이어서 출근</button>
+   <div style="margin:10px 0 4px;font-size:14px;opacity:.8">— 또는 새로 입사하기 —</div>`;
+  $('#contBtn').onclick=()=>{S=saved;S.total=S.total||{ok:0,no:0,spam:0};startGame()};
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+$('#goBtn').onclick=()=>{ac();const n=$('#nameIn').value.trim()||'신입';S={name:n,xp:0,coll:{},total:{ok:0,no:0,spam:0}};save();startGame()};
+$('#nameIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#goBtn').click()});
+
+function startGame(){
+  ac();
+  SES={ok:0,no:0,spam:0,best:0,items:[],startRank:rankIdx(S.xp),startXp:S.xp};
+  $('#start').classList.add('hidden');$('#game').classList.remove('hidden');
+  updHUD();nextQuestion();
+}
+function updHUD(){
+  const r=rankIdx(S.xp),R=RANKS[r],N=RANKS[r+1];
+  $('#hName').textContent=S.name;$('#hRank').textContent=R.n;$('#hPh').textContent=R.e;
+  $('#hXp').textContent=S.xp+' XP';
+  $('#hNext').textContent=N?`다음 승진: ${N.n} (${N.x-S.xp} XP 남음)`:'최고 직급 달성!';
+  $('#hBar').style.width=(N?((S.xp-R.x)/(N.x-R.x))*100:100)+'%';
+  $('#hOk').textContent=SES.ok;$('#hNo').textContent=SES.no;$('#hCombo').textContent=combo;
+  $('#hComboBox').classList.toggle('hot',combo>=3);
+}
+function changeXP(d){
+  const o=rankIdx(S.xp);S.xp=Math.max(0,S.xp+d);const n=rankIdx(S.xp);
+  if(n!==o)pendingRank.push({from:o,to:n});
+  save();updHUD();
+}
+function floaty(txt,color,x,y){const d=document.createElement('div');d.className='floaty';d.textContent=txt;d.style.color=color;d.style.left=(x??innerWidth/2)+'px';d.style.top=(y??innerHeight*.35)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1300)}
+function bigStamp(txt,color){const d=document.createElement('div');d.className='bigstamp';d.textContent=txt;d.style.color=color;d.style.textShadow='0 6px 0 rgba(0,0,0,.25)';document.body.appendChild(d);setTimeout(()=>d.remove(),950)}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1600)}
+
+/* ================== 모달 ================== */
+function modal(html,btns,{delay=700}={}){
+  return new Promise(res=>{
+    const ov=document.createElement('div');ov.className='ov';
+    ov.innerHTML=`<div class="modal">${html}<div class="mbtns">${btns.map((b,i)=>`<button class="mbtn ${b.cls||''}" data-i="${i}" disabled>${b.t}</button>`).join('')}</div></div>`;
+    document.body.appendChild(ov);
+    setTimeout(()=>ov.querySelectorAll('.mbtn').forEach(b=>b.disabled=false),delay);
+    ov.querySelectorAll('.mbtn').forEach(b=>b.onclick=()=>{SFX.click();ov.remove();res(btns[+b.dataset.i].v)});
+  });
+}
+async function flushRank(){
+  while(pendingRank.length){
+    const e=pendingRank.shift();const up=e.to>e.from;
+    up?SFX.up():SFX.down(); if(up)confetti(120,['#ffd34d','#ff5c8a','#4fc3ff','#5cff9d']);
+    await modal(`<div class="decree ${up?'':'down'}">
+      <h3>${up?'인사발령':'징계발령'}</h3>
+      <div class="row">성 명 : <b>${esc(S.name)}</b></div>
+      <div class="row">소 속 : (주)네모네모 컴퍼니 사각형연구팀</div>
+      <div class="big">${RANKS[e.from].e} ${RANKS[e.from].n}<span class="arrow">➜</span>${RANKS[e.to].e} <span style="color:${up?'#e0242e':'#2b5fd9'}">${RANKS[e.to].n}</span></div>
+      <div class="row" style="line-height:1.6">${up?'위 사람은 사각형을 정확하게 구별하는 능력이 뛰어나므로 위와 같이 <b>승진</b>을 명함.':'위 사람은 오답 또는 생각 없이 마구 누르기로 회사 규정을 어겨 위와 같이 <b>강등</b>을 명함. 차분히 생각하면 다시 승진할 수 있음!'}</div>
+      <div class="row" style="text-align:right;margin-top:18px;margin-right:110px">네모네모 컴퍼니 대표이사</div>
+      <div class="seal">${up?'승진':'강등'}<small>NEMONEMO</small></div>
+     </div>`,[{t:up?'🎉 감사합니다!':'😢 반성하고 다시 열심히!',v:1,cls:up?'gold':'gray'}],{delay:1100});
+  }
+}
+
+/* ================== 광클 감지 ================== */
+document.addEventListener('pointerdown',e=>{
+  if(!e.target.closest('.ans'))return;
+  if(locked)return;
+  const t=now();clickLog.push(t);clickLog=clickLog.filter(x=>t-x<2500);
+  if(clickLog.length>=9)triggerSpam();
+},true);
+async function triggerSpam(){
+  locked=true;clickLog=[];combo=0;SES.spam++;S.total.spam++;
+  const r=rankIdx(S.xp);
+  const target=r>0?RANKS[r-1].x:0;
+  changeXP(Math.min(-30,target-S.xp));
+  SFX.siren();
+  const d=document.createElement('div');d.id='spam';
+  d.innerHTML=`<div class="siren">🚨</div><h1>광클 감지!</h1><p>문제를 읽지 않고 마구 누르면 회사 규정 위반이에요!<br>경험치 감점 + <u>한 직급 강등</u>입니다.<br>천천히 생각하고 골라 주세요.</p><div class="cnt" id="spamCnt">5</div>`;
+  document.body.appendChild(d);
+  for(let i=5;i>0;i--){$('#spamCnt').textContent=i;await new Promise(r=>setTimeout(r,1000))}
+  d.remove();
+  await flushRank();
+  renderQuestion(true);
+}
+
+/* ================== 문제 생성 ================== */
+function multiQ(o){return Object.assign({kind:'multi'},o)}
+function genPickShapes(){
+  const name=pick(NAMES),k=KEY[name];
+  let keys;
+  for(let t=0;t<50;t++){
+    keys=shuffle(QUADKEYS).slice(0,5+rnd(2));
+    const n=keys.filter(x=>classify(BANK[x])[k]).length;
+    if(n>=1&&n<keys.length)break;
+  }
+  const items=keys.map((x,i)=>({id:i,label:LET[i],pts:BANK[x],c:classify(BANK[x])}));
+  return multiQ({type:'도형 찾기',
+    text:`<em>${name}</em>을(를) 모두 찾아 ⭕표 하세요.`,
+    answer:new Set(items.filter(s=>s.c[k]).map(s=>s.id)),
+    renderVisual(v){v.innerHTML=items.map(s=>`<div class="shapecard ans" data-opt="${s.id}">${quadSVG(s.pts,{label:s.label,cell:18})}<div class="mark"></div></div>`).join('')},
+    renderOpts(){return ''},
+    explain:`<b>${name}</b>은(는) ${DEF[name]}이에요.<br>`+items.map(s=>`<div class="ln"><b>${s.label}</b> ${s.c[k]?'<span class="ok">⭕</span>':'<span class="no">✖</span>'} ${reason(s.c,k)}</div>`).join(''),
+    hint:`<b>${name}</b>의 뜻을 다시 떠올려 보세요: ${DEF[name]}.<br>${TIP[k]}<br>💡 하나의 사각형이 여러 이름을 가질 수 있어요!`});
+}
+function genNameShape(){
+  const x=pick(NAMEDKEYS),c=classify(BANK[x]);
+  return multiQ({type:'이름 붙이기',
+    text:`이 사각형의 이름이 될 수 있는 것을 <em>모두</em> 고르세요.`,
+    answer:new Set(NAMES.filter(n=>c[KEY[n]])),
+    renderVisual(v){v.innerHTML=`<div class="shapecard">${quadSVG(BANK[x],{cell:28})}</div>`},
+    renderOpts(){return `<div class="opts">${NAMES.map(n=>`<button class="opt ans" data-opt="${n}">${n}</button>`).join('')}</div>`},
+    explain:NAMES.map(n=>`<div class="ln">${c[KEY[n]]?'<span class="ok">⭕</span>':'<span class="no">✖</span>'} <b>${n}</b> — ${reason(c,KEY[n])}</div>`).join(''),
+    hint:`각 이름의 조건을 하나씩 확인해 보세요.<br>· 평행한 변이 있나요? · 두 쌍 모두 평행한가요?<br>· 네 변의 길이가 같은가요? · 네 각이 모두 직각인가요?<br>💡 이름은 <b>한 개가 아닐 수도</b> 있어요!`});
+}
+const PROPS=[['ㄱ','마주 보는 두 변의 길이가 같습니다.','oppEq'],['ㄴ','두 쌍의 마주 보는 변이 서로 평행합니다.','para'],['ㄷ','네 변의 길이가 모두 같습니다.','rhom'],['ㄹ','네 각이 모두 직각입니다.','rect']];
+function genProps(){
+  const x=pick(['rect','rect2','sq','sq2','dsq','rhom','rhom2','para','rrect']),c=classify(BANK[x]);
+  return multiQ({type:'성질 찾기',
+    text:`이 사각형의 성질로 알맞은 것을 <em>모두</em> 고르세요.`,
+    answer:new Set(PROPS.filter(p=>c[p[2]]).map(p=>p[0])),
+    renderVisual(v){v.innerHTML=`<div class="shapecard">${quadSVG(BANK[x],{cell:28})}</div>`},
+    renderOpts(){return `<div class="opts" style="flex-direction:column;align-items:center">${PROPS.map(p=>`<button class="opt prop ans" data-opt="${p[0]}"><b>${p[0]}</b>${p[1]}</button>`).join('')}</div>`},
+    explain:PROPS.map(p=>`<div class="ln">${c[p[2]]?'<span class="ok">⭕</span>':'<span class="no">✖</span>'} <b>${p[0]}</b> ${p[1]}</div>`).join('')+`<div class="ln">👉 그래서 이 도형은 <b>${NAMES.filter(n=>c[KEY[n]]).join(', ')}</b>이라고 할 수 있어요.</div>`,
+    hint:`모눈 칸을 세어 <b>변의 길이</b>를 비교하고, 꼭짓점마다 <b>직각</b>인지 살펴보세요.<br>마주 보는 변이 모눈 위에서 나란히 가는지도 확인해요.`});
+}
+const OX=[
+ ['정사각형은 직사각형이라고 할 수 있어요.',1,'정사각형은 네 각이 모두 직각이므로 직사각형이라고 할 수 있어요.','직사각형이 되기 위한 조건은 무엇이었나요? 정사각형의 네 각을 떠올려 보세요.'],
+ ['직사각형은 모두 정사각형이라고 할 수 있어요.',0,'직사각형은 네 변의 길이가 다를 수 있어서 모두 정사각형은 아니에요.','정사각형이 되려면 조건이 두 가지 필요해요. 직사각형은 그 조건을 모두 갖췄을까요?'],
+ ['정사각형은 마름모라고 할 수 있어요.',1,'정사각형은 네 변의 길이가 모두 같으므로 마름모예요.','마름모의 조건은 "네 변의 길이가 모두 같다"예요. 정사각형의 변을 떠올려 보세요.'],
+ ['마름모는 모두 정사각형이에요.',0,'마름모는 네 각이 직각이 아닐 수도 있어서 모두 정사각형은 아니에요.','마름모 중에 각이 비스듬한 것도 있었는지 떠올려 보세요.'],
+ ['평행사변형은 사다리꼴이라고 할 수 있어요.',1,'평행사변형은 평행한 변이 두 쌍이나 있으니 "한 쌍이라도 있는" 사다리꼴이에요.','사다리꼴의 뜻에서 "한 쌍이라도"라는 말에 주목해 보세요.'],
+ ['사다리꼴은 모두 평행사변형이에요.',0,'사다리꼴은 평행한 변이 한 쌍뿐일 수도 있어서 모두 평행사변형은 아니에요.','평행사변형은 평행한 변이 몇 쌍 필요할까요? 사다리꼴은 어떤가요?'],
+ ['직사각형은 마주 보는 두 변의 길이가 같아요.',1,'직사각형은 마주 보는 두 변의 길이가 같아요.','직사각형 모양 공책을 떠올려 위·아래, 왼쪽·오른쪽 변을 비교해 보세요.'],
+ ['직사각형은 네 변의 길이가 항상 모두 같아요.',0,'직사각형은 가로와 세로의 길이가 다를 수 있어요.','가로가 긴 직사각형을 떠올려 보세요.'],
+ ['정사각형은 네 변의 길이가 모두 같아요.',1,'정사각형은 네 변의 길이가 모두 같아요.','정사각형의 뜻을 다시 떠올려 보세요.'],
+ ['마름모는 네 각이 항상 모두 직각이에요.',0,'마름모는 네 변의 길이만 같으면 되고, 각은 직각이 아닐 수 있어요.','비스듬하게 누운 마름모 모양을 떠올려 보세요.'],
+ ['직사각형은 평행사변형이라고 할 수 있어요.',1,'직사각형은 마주 보는 두 쌍의 변이 서로 평행하므로 평행사변형이에요.','직사각형에서 마주 보는 변끼리 나란한지 생각해 보세요.'],
+ ['사다리꼴은 평행한 변이 한 쌍이라도 있는 사각형이에요.',1,'맞아요! 그것이 사다리꼴의 뜻이에요.','교과서에서 배운 사다리꼴의 뜻을 떠올려 보세요.'],
+ ['마름모는 마주 보는 두 쌍의 변이 서로 평행해요.',1,'마름모는 마주 보는 두 쌍의 변이 서로 평행해서 평행사변형이기도 해요.','마름모를 그려 보고 마주 보는 변끼리 나란한지 살펴보세요.'],
+ ['정사각형은 직사각형이 가진 성질을 모두 가져요.',1,'정사각형은 네 각이 직각, 마주 보는 변의 길이가 같음 등 직사각형의 성질을 모두 가져요.','직사각형의 성질을 하나씩 정사각형에 대어 보세요.'],
+ ['직사각형은 정사각형이 가진 성질을 모두 가져요.',0,'"네 변의 길이가 모두 같다"는 정사각형의 성질을 직사각형은 갖지 않을 수 있어요.','정사각형의 성질 중에 직사각형에게 없는 것이 있는지 찾아보세요.'],
+ ['비스듬히 기울어진 사각형은 정사각형이 될 수 없어요.',0,'정사각형을 돌려 놓아도 여전히 네 각이 직각이고 네 변이 같으니 정사각형이에요.','정사각형 색종이를 살짝 돌려 놓으면 어떻게 될까요?'],
+ ['마름모는 마주 보는 각의 크기가 같아요.',1,'마름모는 마주 보는 각의 크기가 같아요.','마름모를 접어 마주 보는 각을 겹쳐 본다고 생각해 보세요.'],
+ ['평행사변형은 네 변의 길이가 항상 모두 같아요.',0,'평행사변형은 마주 보는 두 변의 길이만 같으면 돼요.','길쭉한 평행사변형을 떠올려 보세요.'],
+ ['칠교판 조각 중 사각형은 2개예요.',1,'칠교판에는 정사각형 1개, 평행사변형 1개, 삼각형 5개가 있어요.','칠교판 일곱 조각을 하나씩 떠올리며 변의 개수를 세어 보세요.'],
+ ['칠교판의 평행사변형 조각은 마름모예요.',0,'칠교판 평행사변형 조각은 긴 변과 짧은 변의 길이가 달라서 마름모가 아니에요.','칠교판 평행사변형 조각의 네 변 길이를 비교해 보세요.'],
+];
+function genOX(){
+  let i;do{i=rnd(OX.length)}while(usedOX.includes(i)&&usedOX.length<OX.length);
+  usedOX.push(i);if(usedOX.length>12)usedOX.shift();
+  const [t,a,ex,h]=OX[i];
+  return {kind:'ox',type:'OX 퀴즈',text:`${t}`,answer:a,
+    renderVisual(v){v.innerHTML=''},explain:`정답은 <b>${a?'⭕':'✖'}</b>예요.<br>${ex}`,hint:h};
+}
+function genPicOX(){
+  const x=pick(NAMEDKEYS),c=classify(BANK[x]);
+  let name=pick(NAMES); if(Math.random()<.5){const yes=NAMES.filter(n=>c[KEY[n]]);if(yes.length)name=pick(yes)}
+  const a=c[KEY[name]]?1:0;
+  return {kind:'ox',type:'그림 OX',text:`이 도형은 <em>${name}</em>이라고 할 수 있어요.`,answer:a,
+    renderVisual(v){v.innerHTML=`<div class="shapecard">${quadSVG(BANK[x],{cell:26})}</div>`},
+    explain:`정답은 <b>${a?'⭕':'✖'}</b>예요.<br><b>${name}</b>: ${DEF[name]}.<br>이 도형은 ${reason(c,KEY[name])}.`,
+    hint:`<b>${name}</b>의 뜻: ${DEF[name]}.<br>${TIP[KEY[name]]}`};
+}
+/* 칠교판 */
+const TANGRAM=[
+ {p:[[0,0],[4,0],[2,2]],col:'#FFD60A'},{p:[[0,0],[2,2],[0,4]],col:'#ED1C24'},
+ {p:[[4,2],[4,4],[2,4]],col:'#0072BC'},{p:[[2,2],[3,1],[3,3]],col:'#F15A29'},
+ {p:[[0,4],[1,3],[2,4]],col:'#00AEEF'},{p:[[2,2],[3,3],[2,4],[1,3]],col:'#7F3F98'},
+ {p:[[4,0],[4,2],[3,3],[3,1]],col:'#00A651'}];
+const CIRC='①②③④⑤⑥⑦';
+function tangramSVG(labels,selectable){
+  const u=Math.min(70,(Math.min(innerWidth,700)-80)/4);
+  return `<svg viewBox="-6 -6 ${4*u+12} ${4*u+12}" width="${4*u+12}" style="max-width:100%;filter:drop-shadow(0 10px 12px rgba(0,0,0,.25))">
+   ${TANGRAM.map((t,i)=>{const P=t.p.map(q=>[q[0]*u,q[1]*u]);const cx=P.reduce((s,q)=>s+q[0],0)/P.length,cy=P.reduce((s,q)=>s+q[1],0)/P.length;
+    return `<g class="${selectable?'ans tpiece':''}" data-opt="${i}" style="cursor:${selectable?'pointer':'default'}">
+     <polygon points="${P.map(q=>q.join(',')).join(' ')}" fill="${t.col}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+     <circle cx="${cx}" cy="${cy}" r="${u*.2}" fill="rgba(255,255,255,.92)"/><text x="${cx}" y="${cy+u*.09}" font-size="${u*.26}" text-anchor="middle" fill="#222">${labels[i]}</text>
+     <circle class="tsel" cx="${cx}" cy="${cy}" r="${u*.3}" fill="none" stroke="#ff2d55" stroke-width="5" opacity="0"/></g>`}).join('')}
+  </svg>`;
+}
+function genTangram(){
+  const labels=shuffle(CIRC.split(''));
+  const isQuad=i=>TANGRAM[i].p.length===4;
+  if(Math.random()<.3){
+    const ask=pick([['사각형',2],['삼각형',5]]);
+    const opts=shuffle([...new Set([ask[1],ask[1]===2?1:4,ask[1]===2?3:6,ask[1]===2?4:3])]);
+    return {kind:'choice',type:'칠교판',text:`칠교판 조각 중 <em>${ask[0]}</em>은 모두 몇 개인가요?`,answer:ask[1],
+      renderVisual(v){v.innerHTML=tangramSVG(labels,false)},
+      renderOpts(){return `<div class="opts">${opts.map(n=>`<button class="opt ans" data-opt="${n}">${n}개</button>`).join('')}</div>`},
+      explain:`칠교판은 삼각형 5개(큰 것 2, 중간 1, 작은 것 2)와 사각형 2개(정사각형 1, 평행사변형 1)로 되어 있어요.`,
+      hint:`조각마다 <b>변(곧은 선)이 몇 개</b>인지 세어 보세요. 변이 3개면 삼각형, 4개면 사각형이에요.`};
+  }
+  const name=pick(['정사각형','평행사변형','사다리꼴','마름모','직사각형']),k=KEY[name];
+  const ans=new Set([0,1,2,3,4,5,6].filter(i=>isQuad(i)&&classify(TANGRAM[i].p)[k]));
+  const quads=[5,6];
+  return multiQ({type:'칠교판',text:`칠교판에서 <em>${name}</em>이라고 할 수 있는 조각을 <em>모두</em> 골라 보세요.`,answer:ans,svgSel:true,
+    renderVisual(v){v.innerHTML=tangramSVG(labels,true)},renderOpts(){return `<div class="tip">조각을 눌러서 고르세요</div>`},
+    explain:`삼각형 조각 5개는 사각형이 아니므로 ${name}이 될 수 없어요.<br>`+quads.map(i=>{const c=classify(TANGRAM[i].p);return `<div class="ln"><b>${labels[i]}</b> (${i===5?'보라색 정사각형':'초록색 평행사변형'}) ${c[k]?'<span class="ok">⭕</span>':'<span class="no">✖</span>'} ${reason(c,k)}</div>`}).join(''),
+    hint:`먼저 <b>사각형 조각</b>만 골라내고, 그 조각이 <b>${name}</b>의 조건(${DEF[name]})에 맞는지 확인해 보세요.<br>💡 정사각형 조각은 이름을 여러 개 가질 수 있어요!`});
+}
+/* 막대 */
+const STICKS=[
+ {l:[3,3,5,5],ans:['사다리꼴','평행사변형','직사각형'],why:{'사다리꼴':'같은 길이끼리 마주 보게 놓으면 평행한 변이 생겨요','평행사변형':'길이가 같은 막대끼리 마주 보게 하면 두 쌍이 평행해요','마름모':'네 막대의 길이가 모두 같지 않아요','직사각형':'같은 길이끼리 마주 보게 하고 네 각을 직각으로 만들 수 있어요','정사각형':'네 막대의 길이가 모두 같지 않아요'}},
+ {l:[4,4,4,4],ans:['사다리꼴','평행사변형','마름모','직사각형','정사각형'],why:{'사다리꼴':'마주 보는 변을 평행하게 놓을 수 있어요','평행사변형':'마주 보는 두 쌍을 평행하게 놓을 수 있어요','마름모':'네 막대의 길이가 모두 같아요','직사각형':'네 각을 직각으로 놓을 수 있어요','정사각형':'네 막대가 같고 네 각을 직각으로 만들 수 있어요'}},
+ {l:[3,3,3,6],ans:['사다리꼴'],why:{'사다리꼴':'짧은 막대와 긴 막대를 위·아래로 평행하게 놓으면 만들 수 있어요','평행사변형':'마주 보는 두 쌍의 길이가 같아야 하는데 긴 막대와 짝이 되는 막대가 없어요','마름모':'네 막대의 길이가 모두 같지 않아요','직사각형':'마주 보는 변의 길이가 같아야 하는데 긴 막대의 짝이 없어요','정사각형':'네 막대의 길이가 모두 같지 않아요'}},
+];
+function stickSVG(l){
+  const u=Math.min(46,(Math.min(innerWidth,700)-120)/7),W=Math.max(...l)*u+20,H=l.length*34+10;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%"><defs>
+   <linearGradient id="wd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a06a"/><stop offset=".45" stop-color="#a8673a"/><stop offset="1" stop-color="#6e3d1d"/></linearGradient></defs>
+   ${l.map((n,i)=>`<g transform="translate(10,${10+i*34})"><rect width="${n*u}" height="14" rx="7" fill="url(#wd)"/>
+     <path d="M8 5 Q ${n*u/2} 2 ${n*u-8} 6 M12 10 Q ${n*u/2} 12 ${n*u-14} 9" stroke="rgba(60,30,10,.35)" fill="none"/>
+     <rect y="18" width="${n*u}" height="3" rx="2" fill="rgba(0,0,0,.12)"/></g>`).join('')}</svg>`;
+}
+function genSticks(){
+  const s=pick(STICKS);const lens=shuffle(s.l);
+  return multiQ({type:'막대 사각형',text:`막대 4개를 모두 이용해서 만들 수 있는 사각형의 이름을 <em>모두</em> 고르세요.`,answer:new Set(s.ans),
+    renderVisual(v){v.innerHTML=`<div class="shapecard" style="padding:14px">${stickSVG(lens)}</div>`},
+    renderOpts(){return `<div class="opts">${NAMES.map(n=>`<button class="opt ans" data-opt="${n}">${n}</button>`).join('')}</div>`},
+    explain:NAMES.map(n=>`<div class="ln">${s.ans.includes(n)?'<span class="ok">⭕</span>':'<span class="no">✖</span>'} <b>${n}</b> — ${s.why[n]}</div>`).join(''),
+    hint:`먼저 <b>길이가 같은 막대</b>끼리 짝지어 보세요.<br>네 막대가 모두 같아야 하는 사각형, 마주 보는 막대끼리만 같으면 되는 사각형을 구분해 봐요.`});
+}
+/* 종이띠 자르기 */
+const STRIPS=[
+ [[0,0],[2,2],[5,4],[8,7],[11,12],[14,14],[17,17]],
+ [[0,0],[3,3],[6,5],[9,8],[11,12],[14,14],[18,18]],
+];
+function genStrip(){
+  const cuts=pick(STRIPS),H=3;
+  const pieces=[];for(let i=0;i<6;i++){const a=cuts[i],b=cuts[i+1];pieces.push([[a[0],0],[b[0],0],[b[1],H],[a[1],H]])}
+  const cls=pieces.map(classify);
+  const answer={};NAMES.forEach(n=>LET.forEach((L,j)=>answer[n+'|'+j]=cls[j][KEY[n]]?'O':'X'));
+  return {kind:'table',type:'종이띠 자르기',big:true,
+    text:`직사각형 종이띠를 선을 따라 잘랐어요. 잘라 낸 도형을 보고 맞으면 <em>⭕</em>, 틀리면 <em>✖</em>를 찍으세요.`,answer,
+    renderVisual(v){
+      const W=cuts[6][0],u=Math.min(40,(Math.min(innerWidth,900)-90)/W);
+      v.innerHTML=`<div class="shapecard" style="padding:10px"><svg viewBox="-4 -4 ${W*u+8} ${H*u+8}" width="${W*u+8}" style="max-width:100%">
+        <rect x="0" y="0" width="${W*u}" height="${H*u}" fill="#bfe0b4" stroke="#6a9a5e" stroke-width="2"/>
+        <g stroke="#a9cf9c" stroke-width="1">${Array.from({length:W},(_,i)=>`<line x1="${i*u}" y1="0" x2="${i*u}" y2="${H*u}"/>`).join('')}${Array.from({length:H},(_,i)=>`<line x1="0" y1="${i*u}" x2="${W*u}" y2="${i*u}"/>`).join('')}</g>
+        ${cuts.slice(1,6).map(c=>`<line x1="${c[0]*u}" y1="0" x2="${c[1]*u}" y2="${H*u}" stroke="#1e2330" stroke-width="3"/>`).join('')}
+        ${pieces.map((p,j)=>{const cx=p.reduce((s,q)=>s+q[0],0)/4*u,cy=H*u/2;return `<text x="${cx}" y="${cy+8}" font-size="${u*.6}" text-anchor="middle" fill="#1e2330">${LET[j]}</text>`}).join('')}
+      </svg></div>`},
+    renderOpts(){return `<div class="tabwrap"><table class="otable"><tr><th></th>${LET.map(L=>`<th>${L}</th>`).join('')}</tr>
+      ${NAMES.map(n=>`<tr><th class="rowh">${n}인가요?</th>${LET.map((L,j)=>`<td><button class="cell" data-cell="${n}|${j}"></button></td>`).join('')}</tr>`).join('')}</table></div>
+      <div class="tip">칸을 누를 때마다 ⭕ → ✖ → 빈칸으로 바뀌어요</div>`},
+    explain:pieces.map((p,j)=>{const yes=NAMES.filter(n=>cls[j][KEY[n]]);return `<div class="ln"><b>${LET[j]}</b> : ${yes.length?yes.join(', '):'해당 없음'} ${cls[j].sq?'— 네 각이 직각이고 네 변이 같아요':cls[j].rect?'— 네 각이 모두 직각이에요':cls[j].para?'— 두 쌍의 변이 평행해요':cls[j].trap?'— 위아래 한 쌍만 평행해요':''}</div>`}).join('')+`<div class="ln">💡 종이띠의 위·아래 변은 원래 평행하니까 잘라 낸 조각은 모두 <b>사다리꼴</b>이에요!</div>`,
+    hint:`종이띠의 <b>위·아래 변은 서로 평행</b>해요. 그러면 모든 조각에 평행한 변이 있겠죠?<br>그다음 자른 선 두 개가 <b>서로 나란한지</b>, <b>수직인지</b>, 조각의 가로·세로 칸 수가 같은지 살펴보세요.`};
+}
+
+const GENS=[[genPickShapes,3],[genNameShape,2.2],[genProps,2],[genOX,3],[genPicOX,2],[genTangram,2],[genSticks,1.4],[genStrip,1]];
+function genQ(){
+  for(let t=0;t<20;t++){
+    let r=Math.random()*GENS.reduce((s,g)=>s+g[1],0),g;
+    for(const G of GENS){r-=G[1];if(r<=0){g=G[0];break}} g=g||GENS[0][0];
+    if(lastTypes.slice(-2).includes(g.name))continue;
+    if(g===genStrip&&lastTypes.slice(-6).includes('genStrip'))continue;
+    lastTypes.push(g.name);if(lastTypes.length>8)lastTypes.shift();
+    return g();
+  }
+  return genOX();
+}
+
+/* ================== 렌더 & 채점 ================== */
+let sel=new Set(),tableState={};
+function nextQuestion(){qNo++;attempts=0;Q=genQ();renderQuestion(false)}
+function renderQuestion(keep){
+  sel=new Set();tableState={};
+  const c=$('#qcard');
+  c.innerHTML=`<div class="qhead"><span class="qno">문제 ${qNo}</span><span class="qtype">${Q.type}</span><span class="qtry">${attempts?`다시 도전 ${attempts}/2 · 맞혀도 보상 상자는 없어요`:'한 번에 맞히면 🎁 보상 상자!'}</span></div>
+   <div class="qtext">${Q.text}</div><div class="visual" id="vis"></div><div id="opts"></div>`;
+  Q.renderVisual($('#vis'));
+  const o=$('#opts');
+  if(Q.kind==='ox'){
+    o.innerHTML=`<div class="oxrow"><button class="oxbtn o ans" data-ox="1">⭕<small>맞아요</small></button><button class="oxbtn x ans" data-ox="0">✖<small>틀려요</small></button></div>`;
+    o.querySelectorAll('[data-ox]').forEach(b=>b.onclick=()=>{if(locked)return;grade(+b.dataset.ox===Q.answer,b)});
+  }else if(Q.kind==='choice'){
+    o.innerHTML=Q.renderOpts();
+    o.querySelectorAll('[data-opt]').forEach(b=>b.onclick=()=>{if(locked)return;b.classList.add('sel');grade(+b.dataset.opt===Q.answer,b)});
+  }else{
+    o.innerHTML=Q.renderOpts()+`<div class="submitrow"><button class="clear ans" id="clr">↺ 다시 고르기</button><button class="submit ans" id="sub">✍️ 제출하기</button></div>`;
+    document.querySelectorAll('#qcard [data-opt]').forEach(b=>b.addEventListener('click',()=>{
+      if(locked)return;SFX.click();
+      const id=isNaN(b.dataset.opt)?b.dataset.opt:+b.dataset.opt;
+      sel.has(id)?sel.delete(id):sel.add(id);
+      b.classList.toggle('sel',sel.has(id));
+      const ring=b.querySelector('.tsel');if(ring)ring.setAttribute('opacity',sel.has(id)?1:0);
+    }));
+    document.querySelectorAll('#qcard [data-cell]').forEach(b=>b.addEventListener('click',()=>{
+      if(locked)return;SFX.click();
+      const k=b.dataset.cell,cur=tableState[k]||'',nx=cur===''?'O':cur==='O'?'X':'';
+      tableState[k]=nx;b.className="cell "+nx;b.textContent=nx==='O'?'⭕':nx==='X'?'✖':'';
+    }));
+    $('#clr').onclick=()=>{if(locked)return;renderQuestion(true)};
+    $('#sub').onclick=()=>{if(locked)return;submitMulti()};
+  }
+  qStart=now();locked=false;
+}
+function submitMulti(){
+  if(Q.kind==='table'){
+    const keys=Object.keys(Q.answer);const filled=keys.filter(k=>tableState[k]).length;
+    if(filled<keys.length){toast(`아직 빈칸이 ${keys.length-filled}개 있어요!`);return}
+    const wrong=keys.filter(k=>tableState[k]!==Q.answer[k]).length;
+    grade(wrong===0,$('#sub'),wrong);return;
+  }
+  if(sel.size===0){toast('하나 이상 골라 주세요!');return}
+  const ok=sel.size===Q.answer.size&&[...sel].every(x=>Q.answer.has(x));
+  grade(ok,$('#sub'));
+}
+async function grade(ok,el,wrongCells){
+  locked=true;clickLog=[];
+  const rect=el.getBoundingClientRect(),fx=rect.left+rect.width/2,fy=rect.top;
+  const elapsed=now()-qStart;
+  if(ok){
+    const first=attempts===0;
+    if(first){combo++;SES.best=Math.max(SES.best,combo)}
+    SES.ok++;S.total.ok++;
+    let d=first?10+Math.min(combo-1,5)*2+(Q.big?8:0):4;
+    SFX.ok();bigStamp('딩동댕!','#ff2d55');floaty('+'+d+' XP','#12b36c',fx,fy);
+    changeXP(d);
+    await new Promise(r=>setTimeout(r,700));
+    const v=await modal(`<h2>🎉 정답이에요!</h2><div class="lead">${first?(combo>=2?`🔥 ${combo}연속 정답! 보너스 경험치 +${Math.min(combo-1,5)*2}`:'한 번에 맞혔어요! 보상 상자를 열 수 있어요.'):'다시 도전해서 맞혔어요! 끝까지 생각한 것 멋져요 👍'}</div>
+      <div class="explain"><b>📝 풀이</b><br>${Q.explain}</div>`,[first?{t:'🎁 보상 상자 열기',v:'g',cls:'gold'}:{t:'다음 문제 ▶',v:'n'}],{delay:900});
+    if(v==='g')await gacha();
+    await flushRank();
+    nextQuestion();
+  }else{
+    attempts++;combo=0;SES.no++;S.total.no++;
+    const fast=elapsed<1800;
+    let d=-(8+(fast?5:0));
+    SFX.no();$('#qcard').classList.remove('shake');void $('#qcard').offsetWidth;$('#qcard').classList.add('shake');
+    bigStamp('땡!','#2b6fe8');floaty(d+' XP','#ff3b5c',fx,fy);
+    changeXP(d);
+    await new Promise(r=>setTimeout(r,700));
+    const canRetry=(Q.kind==='multi'||Q.kind==='table')&&attempts<3;
+    const v=await modal(`<h2>😵 아쉬워요!</h2>
+      <div class="lead">${fast?'<b style="color:#e8204a">⚡ 너무 빨리 골랐어요! 찍기 감점 -5 추가</b><br>':''}${wrongCells?`표에서 <b>${wrongCells}칸</b>이 틀렸어요. 어느 칸인지 찾아보세요!<br>`:''}정답은 알려 주지 않을게요. 힌트를 보고 다시 생각해 봐요.</div>
+      <div class="explain hint"><b>💡 생각 힌트</b><br>${Q.hint}</div>
+      ${canRetry?'':`<div class="lead" style="margin-top:12px;font-size:15px">${Q.kind==='ox'||Q.kind==='choice'?'OX·고르기 문제는 다시 풀 수 없어요.':'세 번 도전했어요.'} 이 문제는 나중에 선생님과 함께 확인해 봐요!</div>`}`,
+      [canRetry?{t:`✏️ 다시 풀기 (${3-attempts}번 남음)`,v:'r'}:{t:'다음 문제 ▶',v:'n',cls:'gray'}],{delay:1600});
+    await flushRank();
+    if(v==='r'){renderQuestion(true)}else nextQuestion();
+  }
+}
+
+/* ================== 보상 상자 ================== */
+function roll(){
+  const w=TIERS.map(t=>t.w*((combo>=5&&['rare','epic','legend','myth'].includes(t.k))?1.6:1));
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);let tier=TIERS[0];
+  for(let i=0;i<TIERS.length;i++){r-=w[i];if(r<=0){tier=TIERS[i];break}}
+  return {tier,item:pick(ITEMS.filter(x=>x.t===tier.k))};
+}
+function gacha(){
+  return new Promise(res=>{
+    const {tier,item}=roll();
+    const g=document.createElement('div');g.id='gacha';
+    g.innerHTML=`<div class="rays"></div><div class="say">상자를 <b style="color:#ffd34d">3번</b> 톡톡 두드려 열어요!</div>
+      <div class="box" id="box" style="--tc:${tier.c}"><div class="lid"></div><div class="body"></div><div class="rib"></div><div class="bow">🎀</div><div class="q">?</div></div>
+      <div class="taps"><i></i><i></i><i></i></div>`;
+    document.body.appendChild(g);
+    let n=0,busy=false;const box=g.querySelector('#box');
+    box.onclick=()=>{
+      if(busy||n>=3)return;busy=true;n++;SFX.tap();
+      g.querySelectorAll('.taps i')[n-1].classList.add('on');
+      box.classList.remove('tap');void box.offsetWidth;box.classList.add('tap');
+      if(n===2&&['epic','legend','myth'].includes(tier.k)){box.classList.add('glow');g.querySelector('.say').innerHTML='어? 상자가 빛나요…! ✨'}
+      setTimeout(()=>{busy=false;if(n===3)open()},320);
+    };
+    function open(){
+      box.classList.add('open','glow');
+      setTimeout(()=>{
+        $('#flash').classList.remove('go');void $('#flash').offsetWidth;$('#flash').classList.add('go');
+        SFX.reveal(tier.k);
+        const isNew=!S.coll[item.id];S.coll[item.id]=(S.coll[item.id]||0)+1;SES.items.push(item.id);save();
+        const big=['legend','myth'].includes(tier.k);
+        g.querySelector('.rays').style.opacity=big?1:(tier.k==='epic'?.6:.25);
+        if(big){g.querySelector('.rays').style.background=`repeating-conic-gradient(from 0deg,${tier.c}55 0 8deg,transparent 8deg 20deg)`}
+        confetti(big?260:tier.k==='epic'?120:50,big?['#ffd34d','#fff3a8','#ff9a00','#ffffff','#ff4dd2']:[tier.c,'#ffffff','#ffd34d']);
+        box.remove();g.querySelector('.taps').remove();
+        g.querySelector('.say').innerHTML=big?`<span style="font-size:40px;color:${tier.c};text-shadow:0 0 20px ${tier.c}">★ ${tier.n} 등급 ★</span><br>엄청난 행운이에요!!`:`${tier.n} 등급 카드 획득!`;
+        const card=document.createElement('div');card.className='card t-'+tier.k;
+        card.innerHTML=`<div class="in">${isNew?'<div class="new">NEW!</div>':''}<span class="tier t-${tier.k}">${tier.n}</span>
+          <div class="art">${item.e}</div><div class="nm">${item.n}</div><div class="ds">${item.d}</div>${['rare','epic','legend','myth'].includes(tier.k)?'<div class="shine"></div>':''}</div>`;
+        g.appendChild(card);
+        const b=document.createElement('button');b.className='mbtn gold';b.style.cssText='margin-top:22px;z-index:3';b.textContent='📒 도감에 넣기';b.disabled=true;
+        g.appendChild(b);setTimeout(()=>b.disabled=false,900);
+        b.onclick=()=>{SFX.click();g.remove();res()};
+      },450);
+    }
+  });
+}
+/* 꽃가루 */
+const cv=$('#confetti'),cx=cv.getContext('2d');let parts=[],animing=false;
+function confetti(n,cols){
+  cv.width=innerWidth;cv.height=innerHeight;
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.45,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,s:5+Math.random()*7,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:pick(cols),l:120+rnd(60),sh:rnd(3)});
+  if(!animing){animing=true;requestAnimationFrame(step)}
+}
+function step(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p=>{p.vy+=.45;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l--;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;
+    if(p.sh===0)cx.fillRect(-p.s/2,-p.s/2,p.s,p.s);else if(p.sh===1){cx.beginPath();cx.moveTo(0,-p.s);cx.lineTo(p.s,0);cx.lineTo(0,p.s);cx.lineTo(-p.s,0);cx.fill()}else cx.fillRect(-p.s,-p.s/4,p.s*2,p.s/2);
+    cx.restore()});
+  parts=parts.filter(p=>p.l>0&&p.y<cv.height+40);
+  if(parts.length)requestAnimationFrame(step);else{animing=false;cx.clearRect(0,0,cv.width,cv.height)}
+}
+
+/* ================== 도감 / 퇴근 ================== */
+$('#collBtn').onclick=()=>{
+  SFX.click();
+  const own=ITEMS.filter(i=>S.coll[i.id]).length;
+  modal(`<h2>📒 보상 도감</h2><div class="lead">${own} / ${ITEMS.length} 수집</div>
+   <div class="tierleg">${TIERS.map(t=>`<span class="t-${t.k}">${t.n}</span>`).join('')}</div>
+   <div class="coll">${TIERS.map(t=>ITEMS.filter(i=>i.t===t.k).map(i=>{const h=S.coll[i.id];return `<div class="ci t-${t.k} ${h?'':'lock'}"><div class="in"><div class="e">${i.e}</div><div class="n">${h?i.n:'???'}</div><div class="c">${h?'× '+h:t.n}</div></div></div>`}).join('')).join('')}</div>`,
+   [{t:'닫기',v:1}],{delay:200});
+};
+$('#sndBtn').onclick=()=>{soundOn=!soundOn;$('#sndBtn span').textContent=soundOn?'🔊':'🔇'};
+$('#endBtn').onclick=async()=>{
+  if(locked)return;
+  const tot=SES.ok+SES.no,acc=tot?Math.round(SES.ok/tot*100):0;
+  const gr=tot<5?'-':acc>=90&&SES.spam===0?'S':acc>=75?'A':acc>=55?'B':'C';
+  const r0=SES.startRank,r1=rankIdx(S.xp);
+  const v=await modal(`<h2>📋 오늘의 인사고과</h2><div class="lead">${esc(S.name)} ${RANKS[r1].n}님, 오늘도 수고했어요!</div>
+    <div class="grade">${gr}</div><div class="lead" style="font-size:14px">${tot<5?'5문제 이상 풀면 등급이 나와요':'등급 기준: 정답률과 광클 여부'}</div>
+    <table class="report" style="margin:0 auto">
+     <tr><td>정답 / 오답</td><td>${SES.ok} / ${SES.no}</td></tr>
+     <tr><td>정답률</td><td>${acc}%</td></tr>
+     <tr><td>최고 연속 정답</td><td>🔥 ${SES.best}</td></tr>
+     <tr><td>광클 적발</td><td>${SES.spam}회</td></tr>
+     <tr><td>직급 변화</td><td>${RANKS[r0].n} ➜ ${RANKS[r1].n}</td></tr>
+     <tr><td>오늘 얻은 카드</td><td>${SES.items.length}장</td></tr>
+    </table><div style="text-align:center;font-size:32px;margin-top:8px">${SES.items.map(id=>ITEMS.find(i=>i.id===id).e).join(' ')}</div>`,
+    [{t:'계속 일하기',v:'c'},{t:'🏠 처음 화면으로',v:'h',cls:'gray'}],{delay:400});
+  if(v==='h')location.reload();
+};
+addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight});
+</script>
+</body>
+</html>
